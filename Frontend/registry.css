@@ -139,3 +139,13 @@ form div.incorrect input{
 #error_message{
     color: #aa010d;
 }
+
+.toggle-password{
+background-color: transparent; 
+background-repeat:no-repeat; 
+font-size:12px; 
+border-radius: 50%;
+color: black;
+padding: 5px 5px;
+border:2px solid #071c07;
+}
