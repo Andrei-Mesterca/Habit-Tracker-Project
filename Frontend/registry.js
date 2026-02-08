@@ -5,19 +5,51 @@ const password_input = document.getElementById("password_input");
 const repeat_password_input = document.getElementById("repeat_password_input");
 const error_message = document.getElementById("error_message");
 
-form.addEventListener("submit", (e) => {    //Waiting for the submit event listener
-    // e.preventDefault();   Prevents submission
+form.addEventListener("submit", async (e) => {    //Waiting for the submit event listener
+    e.preventDefault();  // Prevents submission
 
     let errors = [];
 
     if(repeat_password_input !== null){  //This means we are in the signup
         errors = getSignUpFormErrors(username_input, email_input, password_input,repeat_password_input);
+
+        if(errors.length == 0){ //if therea are no errors, send to backend
+            try{
+                //requesting via http to the signup endpoint in backend
+                const response = await fetch("http://localhost:3000/api/signup", {
+                    method: "POST", 
+                    headers:{
+                        "Content-Type": "application/json" // letting server know tht it will recieve a json file
+                    },
+                    body: JSON.stringify({// converts js object to JSON string
+                        username: username_input.value,
+                        email: email_input.value,
+                        password: password_input.value
+                    })
+                });
+                //gets the JSON from the backend
+                const data = await response.json();
+                console.log("Backend reponse: ", data);
+                if(data.success){//checks if the user sucessfully signed up
+                    alert("Signup successful! You will be redirected to the log in");
+                    window.location.href = "login.html"; //is successful signup, then redirect to login page
+                    
+                }
+                else{
+                    //if signup failure, give error
+                    error_message.innerText = data.error;
+                }
+            }
+            catch (error){
+                console.error("Error when signing up", error);
+                error_message.innerText = "Error. Attempt to sign up again"
+            }
+        }
     }
     else{  //If we don't have a username input then we are in the backup
         errors = getLoginFormErrors(username_input, password_input);
     }
     if(errors.length > 0){  //If there are any errors in the array
-        e.preventDefault();
         error_message.innerText = errors.join(", ");
     }
 })
