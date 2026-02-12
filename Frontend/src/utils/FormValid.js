@@ -1,3 +1,4 @@
+export function initFormValidation() {
 const form = document.getElementById("form");
 const username_input = document.getElementById("username_input");
 const email_input = document.getElementById("email_input");
@@ -113,3 +114,5 @@ fetch("http://localhost:3000/health")
   .then(data => {
     console.log("Backend response:", data);
   });
+
+}

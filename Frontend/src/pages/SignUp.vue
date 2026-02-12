@@ -1,17 +1,14 @@
-<!doctype html>
-<html lang="en">
+<script>
+import { onMounted } from 'vue'
+import { initFormValidation } from '@/utils/FormValid'
+//i think this is pretty bad practise, we should eventually convert the js to be properly compatable with vue
+onMounted(() => {
+  initFormValidation()
+})
 
-<head>
-    <meta charset="UTF-8">      <!--Lines of code 1-9, 12 and body tags are developed using ! tab at the start-->
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Habitual Sign-Up</title>
-    <link rel="stylesheet" href="registry.css">    <!--Stylesheet related to the backup page-->
-    <script type="text/javascript" src="registry.js" defer></script>
-</head>
+</script>
+<template>
 
-<body>
 <div class="wrapper">   <!--Wrapper is used to contain and manage the layout of other elements within a page-->
     <h1>Habitual Sign-Up</h1>
     <form id="form">  <!--Used for user input-->
@@ -47,7 +44,13 @@
         <button type="submit">Sign-Up</button>
         <p id="error_message"></p>
     </form>
-    <p>Already have an account? <a href="login.html">Log In!</a></p><br> <!--Reference within a paragraph-->
+    <p>Already have an account? <router-link to="/login">Login</router-link></p><br> <!--Reference within a paragraph-->
+    <p><router-link to="/">Go to Home</router-link></p>
 </div>
-</body>
-</html>
+</template>
+
+
+
+<style scoped>
+ 
+</style>
