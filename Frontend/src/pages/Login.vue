@@ -1,0 +1,49 @@
+<script setup>
+import { onMounted } from 'vue'
+import { initFormValidation } from '@/utils/FormValid'
+//i think this is pretty bad practise, we should eventually convert the js to be properly compatable with vue
+onMounted(() => {
+  initFormValidation()
+})
+
+function seePassword(){
+                const passwordInput = document.getElementById('password_input');
+                const seeButton = document.querySelector('.toggle-password');
+
+                if (passwordInput.type == 'password'){
+                    passwordInput.type = 'text';
+                    seeButton.textContent = 'Hide';
+                }
+                else{
+                    passwordInput.type = 'password';
+                    seeButton.textContent = 'Show';
+                }
+            }
+</script>
+<template>
+    <div class="wrapper">   <!--Wrapper is used to contain and manage the layout of other elements within a page-->
+    <h1>Habitual Log In</h1>
+    <form id="form">  <!--Used for user input-->
+
+        <div>
+            <label for="username_input">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z"/></svg>
+            </label>    <!--This is a svg file from Google Fonts-->
+            <input type="text" name="username_input" id="username_input" placeholder="Enter Username">
+        </div>  <!--Required means it has to accept something. Can't be null-->
+
+        <div>
+            <label for="password_input">    <!--for attribute related to the form-->
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M280-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 120q-100 0-170-70T40-480q0-100 70-170t170-70q81 0 141.5 46T506-560h335l79 79-140 160-100-79-80 80-80-80h-14q-25 72-87 116t-139 44Z"/></svg>
+            </label>    <!--This is a svg file from Google Fonts-->
+            <input type="password" name="password_input" id="password_input" placeholder="Enter Password">
+            <button @click="seePassword">Show</button>
+        </div>
+
+        <button type="submit">Log In</button>
+        <p id="error_message"></p>
+    </form>
+    <p>Don't have an account? <p><router-link to="/signUp">Sign up here!</router-link></p></p><br> <!--Reference within a paragraph-->
+    <p><router-link to="/">Go to Home</router-link></p>
+    </div>
+</template>
