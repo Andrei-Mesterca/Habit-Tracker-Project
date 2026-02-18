@@ -1,7 +1,12 @@
 <script setup>
     import Nav from '@/components/Nav.vue'
     import { ref } from 'vue'
+    import { onMounted } from "vue";
+    import { useHabits } from "@/composables/useHabits";
     const login = ref('false');
+
+    const { loading, error, handleGetHabits, handleUpsertHabit } = useHabits();
+    const habits = ref([]);
 
 </script>
 <template>
