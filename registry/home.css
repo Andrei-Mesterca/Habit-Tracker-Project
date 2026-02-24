@@ -1,0 +1,137 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    color: white;
+}
+
+/* NAVBAR */
+.navbar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    padding: 30px 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.logo {
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+nav a {
+    margin-left: 30px;
+    text-decoration: none;
+    color: white;
+    opacity: 0.7;
+}
+
+nav a.active,
+nav a:hover {
+    opacity: 1;
+}
+
+/* HERO SECTION */
+.hero {
+    height: 100vh;
+    background: url("pexels-kunstbube-6818620 (1).jpg") center/cover no-repeat;
+    position: relative;
+}
+
+/* OVERLAY */
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.65),
+            rgba(0, 0, 0, 0.2)
+    );
+}
+
+/* HERO CONTENT */
+.hero-content {
+    position: relative;
+    max-width: 600px;
+    padding: 180px 80px;
+    animation: fadeUp 1s ease forwards;
+}
+
+.hero-content h1 {
+    font-size: 64px;
+    line-height: 1.1;
+    font-weight: 700;
+}
+
+.hero-content span {
+    font-weight: 300;
+}
+
+.hero-content p {
+    margin-top: 20px;
+    opacity: 0.85;
+}
+
+/* BUTTON */
+.btn {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 12px 32px;
+    border: 1px solid white;
+    border-radius: 30px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: white;
+    color: black;
+}
+
+/* SOCIALS */
+.socials {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    z-index: 5;
+}
+
+.socials a {
+    text-decoration: none;
+    color: white;
+    opacity: 0.7;
+    font-size: 14px;
+}
+.logo img {
+    height: 40px;        /* controls logo size */
+    width: auto;         /* keeps aspect ratio */
+    display: block;      /* removes extra spacing */
+}
+
+.socials a:hover {
+    opacity: 1;
+}
+
+/* ANIMATION */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
