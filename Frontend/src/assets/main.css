@@ -1,49 +1,60 @@
- @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-:root{  /*Psuedo class that targets the html tag for global styling*/
-    --accent-color: #2B8C64;    /*Considered Global variables within the root class*/
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+    --accent-color: #2B8C64;
     --base-color: #ffffff;
     --text-color: #071c07;
     --input-color: #edf4ee;
 }
-*{  /*  * Selects all of the html elements*/
-    margin: 0;  /*Clean starting point, displays elements in the top left corner*/
+
+* {
+    margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
-html{   /*The html here is described as a selector*/
+
+html {
     font-family: 'Montserrat', sans-serif;
     font-size: 12pt;
-    color: var(--text-color);   /*This is the code that applies the value of the global variable in the root selector*/
-    text-align: center;
+    color: var(--text-color);
 }
-body{
-    min-height: 100vh;  /*vh = viewport height*/
-    background-image: url("pexels-kunstbube-6818620 (1).jpg"); /*Image on the right hand side of the web page*/
-    background-size: cover; /*Conveys the entire image*/
+
+body {
+    min-height: 100vh;
+}
+
+/* ── Login / Signup pages only ── */
+body.auth-page {
+    background-image: url("pexels-kunstbube-6818620 (1).jpg");
+    background-size: cover;
     background-position: left;
-    overflow-x: hidden;   /*Specifies what should happen if content overflows an elements box. Makes it unscrollable*/
     display: flex;
     justify-content: center;
+    align-items: center;
 }
+
 .wrapper {
-    box-sizing: border-box; /*All borders and paddings are created inwards*/
-    background-color: var(--base-color);    /*Avoids color conflict with the two global variables*/
+    box-sizing: border-box;
+    background-color: var(--base-color);
     color: var(--text-color);
-    height: 100vh;
-    width: max(40%, 600px); /*Selects the biggest value of the two*/
+    min-height: 100vh;
+    width: max(40%, 600px);
     padding: 10px;
-    border-radius: 20px 20px 20px 20px;
-    display: flex;  /*Included so it adapts to different screen sizes*/
-    flex-direction: column; /*Various lines are in a column format*/
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    text-align: center;
 }
-h1{
-    font-size: 3rem;    /*3 times the initial font size*/
-    font-weight: 900;   /*Boldness of the font*/
-    text-transform: uppercase;  /*toupper() in css basically*/
+
+h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    text-transform: uppercase;
 }
-form{
-    width: min(400px, 100%);    /*Always returns the smaller value of the 2 values*/
+
+form {
+    width: min(400px, 100%);
     margin-top: 20px;
     margin-bottom: 50px;
     display: flex;
@@ -51,12 +62,14 @@ form{
     align-items: center;
     gap: 10px;
 }
-form > div{ /*Child selector that targets any div tag within a form tag*/
+
+form > div {
     width: 100%;
     display: flex;
     justify-content: center;
 }
-form label{
+
+form label {
     flex-shrink: 0;
     height: 50px;
     width: 50px;
@@ -70,7 +83,8 @@ form label{
     font-size: 1.5rem;
     font-weight: 500;
 }
-form input{
+
+form input {
     box-sizing: border-box;
     flex-grow: 1;
     min-width: 0;
@@ -83,20 +97,19 @@ form input{
     background-color: var(--input-color);
     transition: 150ms ease;
 }
-form input:hover{   /*Code is done when element gets hovered over*/
-    border-color: var(--accent-color)
-}
-form input:focus{   /*Code is done when element gets interacted*/
+
+form input:hover { border-color: var(--accent-color); }
+form input:focus {
     outline: none;
     border-color: var(--text-color);
-}
-form div:focus-within > label{
-    background-color: var(--text-color);
-}
-form input::placeholder{
+    background-color: var(--input-color);
     color: var(--text-color);
 }
-form button{
+
+form div:focus-within > label { background-color: var(--text-color); }
+form input::placeholder { color: var(--text-color); }
+
+form button {
     margin-top: 10px;
     border: none;
     border-radius: 1000px;
@@ -109,33 +122,31 @@ form button{
     cursor: pointer;
     transition: 150ms ease;
 }
-form button:hover{
-    background-color: var(--text-color);
+
+form button:hover { background-color: var(--text-color); }
+
+a { text-decoration: none; color: var(--accent-color); }
+a:hover { text-decoration: underline; }
+
+@media(max-width: 1100px) {
+    .wrapper { width: min(600px, 100%); border-radius: 0; }
 }
-form input:focus{
-    outline: none;
-    background-color: var(--input-color);
-    color: var(--text-color);
-}
-a{
-    text-decoration: none;
+
+form div.incorrect label { background-color: #aa010d; }
+form div.incorrect input { border-color: #aa010d; }
+#error_message { color: #aa010d; }
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
     color: var(--accent-color);
-}
-a:hover{
-    text-decoration: underline;
-}
-@media(max-width:  1100px){
-    .wrapper{
-        width: min(600px,100%);
-        border-radius: 0;
-    }
-}
-form div.incorrect label{
-    background-color: #aa010d
-}
-form div.incorrect input{
-    border-color: #aa010d
-}
-#error_message{
-    color: #aa010d;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0;
+    text-transform: uppercase;
+    margin-top: 0 !important;
+    border-radius: 0 !important;
 }
