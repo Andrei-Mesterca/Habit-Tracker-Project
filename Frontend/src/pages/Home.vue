@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Nav from '@/components/Nav.vue'
-import { useHabits } from '@/composables/useHabits'
+import { useHabits } from '@/composables/UseHabits'
 import { useAuth } from '@/composables/useAuth'
 
 const { currentUser } = useAuth()

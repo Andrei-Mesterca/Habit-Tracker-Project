@@ -18,6 +18,8 @@ async function handleLogout() {
     <div class="nav-links" v-if="currentUser">
       <router-link to="/" class="nav-link">Habits</router-link>
       <router-link to="/cal" class="nav-link">Calendar</router-link>
+      <router-link to="/ana" class="nav-link">Analysis</router-link>
+      <router-link to="/exp" class="nav-link">Explore</router-link>
       <span class="nav-user">{{ currentUser.displayName }}</span>
       <button class="nav-logout" @click="handleLogout">Log Out</button>
     </div>

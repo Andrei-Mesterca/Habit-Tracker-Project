@@ -22,5 +22,15 @@ export default [
     path: '/cal',
     component: loadPage('Calendar'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/ana',
+    component: loadPage('Analysis'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/exp',
+    component: loadPage('Explore'),
+    meta: { requiresAuth: true }
   }
 ];
