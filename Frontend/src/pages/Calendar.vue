@@ -1,13 +1,48 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import Nav from "@/components/Nav.vue";
-import { useHabits } from "@/composables/useHabits";
+import { useHabits } from "@/composables/UseHabits";
 
 const { handleGetHabits } = useHabits();
 
+const viewMode = ref("month"); // can also be set to week
 const habits = ref([]);
 const today = new Date();
+const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+//monthly view
 const todayStr = today.toISOString().split("T")[0];
+
+//used to get weekly view
+const enlargedDay = ref(null)
+const day = today.getDay();
+const week = ref([]);
+
+const generateWeek = () => {
+  week.value = [];
+  const monday = new Date(today);  
+  const mondayOffset = day === 0 ? -6 : 1 - day;//either -6 if its on sunday or else -day value
+  monday.setDate(today.getDate() + mondayOffset);// move to Monday
+ 
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    week.value.push({
+      day: d.getDay(),                        // 0=Sun..6=Sat
+      date: d.getDate(),                       // 1..31
+      fullDate: d.toISOString().split("T")[0] // YYYY-MM-DD, useful for habits
+    });
+  }
+};
+generateWeek();
+
+const displayedDays = computed(() => {
+      if (enlargedDay.value == null) {
+        return week.value
+    }
+return [enlargedDay.value]
+})
+
 
 // Current month being viewed
 const viewYear = ref(today.getFullYear());
@@ -73,14 +108,44 @@ const calendarDays = computed(() => {
 
 // ── Per-day data ──────────────────────────────────────────────────────────────
 
-// Returns array of { name, done } for a given date string
-function habitsForDay(dateStr) {
+// Returns array of { name, done } for a given date string 
+/*function habitsForDay(dateStr) {
   return habits.value.map((h) => ({
     id: h.id,
     name: h.name,
     done: h.completedDates?.includes(dateStr) ?? false,
   }));
-}
+}*/
+  const habitsForDay = (selectedDay) => {
+    let temp=[]
+    let habitsMapped=habits.value.map((h) => ({
+    id: h.id,
+    name: h.name,
+    des: h.description,
+    freq: h.frequency,
+    done: h.completedDates?.includes(selectedDay) ?? false,}));
+    const date = new Date(selectedDay) 
+    const dayCheck = date.getDay();
+    for(const h of habitsMapped){
+      if(h.freq=="daily")
+      {
+        temp.push(h)
+      }
+      else if (h.freq=="weekly" && dayCheck===1)
+      {
+        temp.push(h)
+      }
+      else if (h.freq=="weekends" && (dayCheck===6 || dayCheck===0))
+      {
+        temp.push(h)
+      }
+      else if (h.freq=="weekdays" && (dayCheck===1 || dayCheck===2 || dayCheck===3 || dayCheck===4 || dayCheck===5))
+      {
+        temp.push(h)
+      }
+    }
+  return temp
+  }
 
 // Dot colour per habit — cycle through a palette
 const palette = [
@@ -148,79 +213,54 @@ const selectedDayCount = computed(() => {
     style="
       min-height: 100vh;
       background: #f4f9f6;
-      font-family: &quot;Montserrat&quot;, sans-serif;
     "
   >
     <Nav />
-
+    <button @click="enlargedDay=null;viewMode = viewMode === 'week' ? 'month' : 'week'" class="btn btn-success">
+  {{ viewMode === 'week' ? 'Switch to Month' : 'Switch to Week' }}
+    </button>
+    <div v-if="viewMode==='week'">
+    
+      <div v-if="enlargedDay!=null" style="text-align: center; margin-bottom: 12px;"><button @click="enlargedDay=null" class="navButton"><</button></div>
+      <div  class="week row g-2 d-flex justify-content-center d-flex align-items-stretch">
+        <div v-for="d in displayedDays" @click="enlargedDay=d" :key="d.date" class="col text-center p-4 regDay clickable" :class="{ today: d.day == day, enlarged: enlargedDay!=null}">
+          <div>{{ dayNames[d.day] }}</div>
+          <div>{{ d.date }}</div>
+        <div class="mt-2 border-top pt-2" style="min-height: 50px">
+          <div v-for="habit in habitsForDay(d.fullDate)" :key="habit.id" class="calendar-event">
+          {{ habit.name }} {{ habit.done ? "✓ Done" : "✗ Missed" }}
+          <div v-if="enlargedDay" style="font-size:0.7rem">
+              {{habit.des}}
+              {{habit.freq }}
+          </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+    
+    <div v-else>
     <div style="max-width: 900px; margin: 0 auto; padding: 32px 24px">
       <!-- ── Month header ── -->
-      <div
-        style="
+      <div 
+          style="
           display: flex;
           align-items: center;
           justify-content: space-between;
           margin-bottom: 24px;
-        "
-      >
-        <button
-          @click="prevMonth"
-          style="
-            background: none;
-            border: 1.5px solid #d4ead9;
-            border-radius: 8px;
-            padding: 8px 14px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            color: #2b8c64;
-            font-weight: 700;
-          "
-        >
-          ‹
-        </button>
-        <h2
-          style="font-size: 1.4rem; font-weight: 800; color: #071c07; margin: 0"
-        >
+          font-size: 1.4rem; font-weight: 800; color: #071c07; margin: 0 ">
+
+        <button @click="prevMonth" class="navButton" >‹</button>
+        <h2 style="">
           {{ monthName }}
         </h2>
-        <button
-          @click="nextMonth"
-          style="
-            background: none;
-            border: 1.5px solid #d4ead9;
-            border-radius: 8px;
-            padding: 8px 14px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            color: #2b8c64;
-            font-weight: 700;
-          "
-        >
-          ›
-        </button>
+        <button @click="nextMonth" class="navButton">›</button>
+
       </div>
 
       <!-- ── Day of week labels ── -->
-      <div
-        style="
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 6px;
-          margin-bottom: 6px;
-        "
-      >
-        <div
-          v-for="d in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']"
-          :key="d"
-          style="
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #5a7a5a;
-            padding: 4px 0;
-            text-transform: uppercase;
-          "
-        >
+      <div class="weekLabels">
+        <div v-for="d in dayNames" :key="d">
           {{ d }}
         </div>
       </div>
@@ -233,36 +273,15 @@ const selectedDayCount = computed(() => {
           v-for="(dateStr, i) in calendarDays"
           :key="i"
           @click="clickDay(dateStr)"
-          :style="{
-            minHeight: '72px',
-            borderRadius: '10px',
-            padding: '6px 8px',
-            background: dateStr === selectedDay ? '#2B8C64' : dayBg(dateStr),
-            border: isToday(dateStr)
-              ? '2px solid #2B8C64'
-              : '1.5px solid #e4efe6',
-            cursor: dateStr && !isFuture(dateStr) ? 'pointer' : 'default',
-            opacity: isFuture(dateStr) ? '0.4' : '1',
-            transition: 'background 150ms',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
-          }"
+          class="regDay"
+          :class="{select: dateStr===selectedDay, today: isToday(dateStr), clickable: dateStr && !isFuture(dateStr), future: isFuture(dateStr) }"
+          :style="{background: dateStr === selectedDay ? '#2B8C64' : dayBg(dateStr),}"
         >
           <!-- Day number -->
           <div
             v-if="dateStr"
-            :style="{
-              fontSize: '0.82rem',
-              fontWeight: isToday(dateStr) ? '800' : '600',
-              color:
-                dateStr === selectedDay
-                  ? '#fff'
-                  : isToday(dateStr)
-                    ? '#2B8C64'
-                    : '#071c07',
-              lineHeight: '1',
-            }"
+            :class="{select: dateStr===selectedDay, today: isToday(dateStr)}"
+            :style="{border:0}"
           >
             {{ parseInt(dateStr.split("-")[2]) }}
           </div>
@@ -286,7 +305,7 @@ const selectedDayCount = computed(() => {
           </div>
         </div>
       </div>
-
+      </div>
       <!-- ── Legend ── -->
       <div
         v-if="habits.length"
@@ -439,4 +458,82 @@ const selectedDayCount = computed(() => {
       </div>
     </div>
   </div>
+  
 </template>
+
+<style scoped>
+.navButton{
+  background: none;
+  border: 1.5px solid #d4ead9;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #2b8c64;
+  font-weight: 700;
+}
+
+ .week{
+    width: 95vw;
+    height: 60vh;
+    margin: 10vh auto;
+ }
+
+ .calendar-event {
+    background-color: hsl(155, 88%, 49%);
+    color: white;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    text-align: left;
+    transition: 0.2s;
+}
+
+.regDay{
+  min-height: 72px;
+  border-radius: 10px;
+  padding: 6px 8px;
+  border: 1.5px solid #e4efe6;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background 150ms;
+  font-size: 0.82rem;
+  color: #071c07;
+  font-weight: 600;
+  line-height: 1;
+}
+.today {
+  border: 2px solid #2B8C64;
+  color: #2B8C64;
+  font-weight: 800;
+  
+}
+.clickable{
+  cursor: pointer;
+}
+.future{
+  opacity: 0.4;
+}
+.select{
+  background: #2B8C64 !important;
+  color: #fff !important;
+}
+.weekLabels{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5a7a5a;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+.enlarged{
+  max-width: 400px; /* restrict width */
+}
+</style>
