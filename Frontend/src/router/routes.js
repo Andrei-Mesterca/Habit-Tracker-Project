@@ -1,26 +1,27 @@
-function loadPage(component) {
-  return () => import(`@/pages/${component}.vue`);
-}
+import Home from '@/pages/Home.vue'
+import Login from '@/pages/Login.vue'
+import SignUp from '@/pages/SignUp.vue'
+import Calendar from '@/pages/Calendar.vue'
 
 export default [
   {
     path: '/',
-    component: loadPage('Home'),
+    component: Home,
     meta: { requiresAuth: true }
   },
   {
     path: '/login',
-    component: loadPage('Login'),
+    component: Login,
     meta: { requiresAuth: false }
   },
   {
     path: '/signUp',
-    component: loadPage('SignUp'),
+    component: SignUp,
     meta: { requiresAuth: false }
   },
   {
     path: '/cal',
-    component: loadPage('Calendar'),
+    component: Calendar,
     meta: { requiresAuth: true }
   }
 ];
