@@ -1,17 +1,36 @@
 import { ref } from "vue"; //reactive state that vue tracks
-import { upsertHabit, getHabits as fetchHabits, getHabitsByName } from "@/services/HabitsService.js"; //firestore write function
-import { createHabit } from "@/utils/habitModel";
-import { arrayUnion, arrayRemove, getDoc, updateDoc, doc } from "firebase/firestore"
+import { 
+    upsertHabit, 
+    getHabits as fetchHabits,
+    deleteHabit as removeHabit,
+    toggleHabitCompletion as toggleCompletion,
+    isHabitComplete as checkHabitComplete
+ } from "@/services/HabitsService.js";
+import { useAuth } from "@/composables/useAuth";
 
 
-function resolveUid(uidOrRef){
-    if (typeof uidOrRef === "string") return uidOrRef;
-    return uidOrRef?.value;
-}
-export function useHabits(uidOrRef){
+export function useHabits(){
+
+    const { currentUser, authReady } = useAuth();
     //this function manages the state
     const loading = ref(false); //true while firestore is running
     const error = ref(null); //stops any errors that occurs
+
+    async function waitForUid(timeout = 4000){
+        const start = Date.now();
+        while (Date.now() - start < timeout){
+            if(authReady.value && currentUser.value?.uid) {
+                return currentUser.value.uid;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        if(authReady.value && !currentUser.value?.uid) {
+            throw new Error("User is not signed in");
+        }
+
+        throw new Error("Authentication is still loading");
+    }
 
     //function that the component calls
     //habitnis the data passed from the UI
@@ -19,8 +38,8 @@ export function useHabits(uidOrRef){
         loading.value = true; //disable buttons
         error.value = null; //clear old errors
         try {
-            const uid = resolveUid(uidOrRef);
-            if (!uid) throw new Error("No uid available yet");
+            const uid = await waitForUid();
+            console.log("PAYLOAD INSIDE useHabits:", habit)
             return await upsertHabit(uid, habit);
             //calls firestire and waits for firestore to finish
             //returns the new document ID
@@ -38,8 +57,7 @@ export function useHabits(uidOrRef){
         loading.value = true;
         error.value = null;
         try {
-            const uid = resolveUid(uidOrRef);
-            if (!uid) throw new Error("No uid available yet");
+            const uid = await waitForUid();
             const result = await fetchHabits(uid);
             console.log("Fetched Habits:", result);
             return result;
@@ -50,81 +68,63 @@ export function useHabits(uidOrRef){
                 loading.value = false;
             }
         }
-    
-    async function completeHabit(habitId){
-        const d = new Date();
-        const y = d.getFullYear();
-        const m = d.getMonth()+1;
-        const day = d.getDate();
-        const date = y+"-"+String(m).padStart(2,'0')+"-"+String(day).padStart(2,'0');
-        const uid = resolveUid(uidOrRef);
-        if (!uid) throw new Error("No uid available yet");
-        const docRef = doc(db, "users", uid, "habit", habitId);
 
-        const snap = await getDoc(docRef);
+    async function handleDeleteHabit(habitId) {
+        loading.value = true;
+        error.value = null;
 
-        if (!snap.exists()){
-            throw new Error("snap doesn't exist");
+        try {
+            const uid = await waitForUid();
+
+            await removeHabit(uid, habitId);
+        } catch (e) {
+            error.value = e instanceof Error ? e : new Error(String(e));
+            throw error.value;
+        } finally {
+            loading.value = false;
         }
-
-        const daily = snap.data().frequency?.equals("daily");
-        const weekly = snap.data().frequency?.equals("weekly"); 
-        if (daily){
-            //if the habit is completed daily
-            const completed = snap.data().completedDays?.includes(date);
-
-            if (completed) {
-                await updateDoc(docRef, {
-                    completedDays: arrayRemove(date),
-                });
-            }
-            else{
-                await updateDoc(docRef, {
-                    completedDays: arrayUnion(date),
-                });
-            }
-        }
-        else if(weekly){
-            const dayWeek = d.getDay();
-            const mondayIndex = (dayWeek === 0 ? 6 : dayWeek -1);
-            const mondayDate = new Date(d);
-            mondayDate.setDate(mondayDate.getDate() - mondayIndex);
-            let y = mondayDate.getFullYear();
-            let m = mondayDate.getMonth()+1;
-            let day = mondayDate.getDate();
-            const monDate = y+"-"+String(m).padStart(2,'0')+"-"+String(day).padStart(2,'0');
-            const sundayDate = new Date(d);
-            sundayDate.setDate(sundayDate.getDate() + (6 - mondayIndex));
-            y = sundayDate.getFullYear();
-            m = sundayDate.getMonth()+1;
-            day = sundayDate.getDate();
-            const sunDate = y+"-"+String(m).padStart(2,'0')+"-"+String(day).padStart(2,'0');
-            const completed = snap.data().completedDays?.some(date => date>=monDate && date <= sunDate);
-
-            if (completed) {
-                await updateDoc(docRef, {
-                    completedDays: arrayRemove(date),
-                });
-            }
-            else{
-                await updateDoc(docRef, {
-                    completedDays: arrayUnion(date),
-                });
-            }
-        }
-
     }
-    //these become available in the vue component
-    return { loading, error, handleUpsertHabit, handleGetHabits};
-}
 
-async function handleCreateHabit(){
-    const habit = createHabit({
-        name: nameInput.value,
-        description: descriptionInput.value,
-        frequency: frequencyInput.value,
-        daysOfWeek: daysOfWeekInput.value,
-        userId: uid,
-    });
-    await handleUpsertHabit(habit);
-}
+    async function handleToggleHabitCompletion(habitId) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const uid = await waitForUid();
+
+            await toggleCompletion(uid, habitId);
+        } catch (e) {
+            error.value = e instanceof Error ? e : new Error(String(e));
+            throw error.value;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function handleIsHabitComplete(habitId) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const uid = await waitForUid();
+
+            return await checkHabitComplete(uid, habitId);
+        } catch (e) {
+            error.value = e instanceof Error ? e : new Error(String(e));
+            throw error.value;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    return {
+        loading,
+        error,
+        handleUpsertHabit,
+        handleGetHabits,
+        handleDeleteHabit,
+        handleToggleHabitCompletion,
+        handleIsHabitComplete
+    };
+}  
+

@@ -14,7 +14,7 @@ export function createHabit({
 };
 }
 
-async function isHabitComplete(habitId){
+export async function isHabitComplete(habitId){
     let isCompleted = false;
     const d = new Date();
     const y = d.getFullYear();
@@ -31,13 +31,15 @@ async function isHabitComplete(habitId){
         throw new Error("snap doesn't exist");
     }
 
-    const daily = snap.data().frequency?.equals("daily");
-    const weekly = snap.data().frequency?.equals("weekly"); 
+    const daily = snap.data().frequency === "daily";
+    const weekly = snap.data().frequency === "weekly"; 
     if (daily){
         //if the habit is completed daily
         const completed = snap.data().completedDays?.includes(date);
 
-        isCompleted = true;
+        if (completed){
+            isCompleted = true;
+        }
     }
     else if(weekly){
         const dayWeek = d.getDay();
