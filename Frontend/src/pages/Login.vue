@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { onMounted, onUnmounted } from 'vue'
 
 const router = useRouter()
 const { login } = useAuth()
@@ -39,6 +40,13 @@ async function handleLogin() {
     loading.value = false
   }
 }
+onMounted(() => {
+  document.body.classList.add('auth-page')
+})
+
+onUnmounted(() => {
+  document.body.classList.remove('auth-page')
+})
 </script>
 
 <template>
@@ -108,5 +116,17 @@ async function handleLogin() {
 }
 form > div {
   position: relative;
+}
+.wrapper {
+  min-height: 100vh;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* horizontal center */
+  align-items: center;     /* vertical center */
+}
+form {
+  width: 100%;
+  max-width: 400px;
 }
 </style>

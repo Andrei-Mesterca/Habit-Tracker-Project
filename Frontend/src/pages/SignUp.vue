@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { onMounted, onUnmounted } from 'vue'
 
 const router = useRouter()
 const { login } = useAuth()
@@ -54,6 +55,13 @@ async function handleSignUp() {
     loading.value = false
   }
 }
+onMounted(() => {
+  document.body.classList.add('auth-page')
+})
+
+onUnmounted(() => {
+  document.body.classList.remove('auth-page')
+})
 </script>
 
 <template>

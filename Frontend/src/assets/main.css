@@ -34,6 +34,7 @@ body.auth-page {
 }
 
 .wrapper {
+    margin: 0 auto;
     box-sizing: border-box;
     background-color: var(--base-color);
     color: var(--text-color);
