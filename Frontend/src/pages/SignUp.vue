@@ -1,6 +1,7 @@
 <script>
 import { onMounted } from 'vue'
 import { initFormValidation } from '@/utils/FormValid'
+import '@/assets/main.css'
 //i think this is pretty bad practise, we should eventually convert the js to be properly compatable with vue
 onMounted(() => {
   initFormValidation()
@@ -48,9 +49,3 @@ onMounted(() => {
     <p><router-link to="/">Go to Home</router-link></p>
 </div>
 </template>
-
-
-
-<style scoped>
- 
-</style>

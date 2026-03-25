@@ -13,7 +13,7 @@ html{   /*The html here is described as a selector*/
     font-family: 'Montserrat', sans-serif;
     font-size: 12pt;
     color: var(--text-color);   /*This is the code that applies the value of the global variable in the root selector*/
-    text-align: center;
+    /*text-align: center;*/
 }
 body{
     min-height: 100vh;  /*vh = viewport height*/
@@ -40,7 +40,6 @@ body{
 h1{
     font-size: 3rem;    /*3 times the initial font size*/
     font-weight: 900;   /*Boldness of the font*/
-    text-transform: uppercase;  /*toupper() in css basically*/
 }
 form{
     width: min(400px, 100%);    /*Always returns the smaller value of the 2 values*/

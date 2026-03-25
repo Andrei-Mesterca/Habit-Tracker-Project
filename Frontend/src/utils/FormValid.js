@@ -18,7 +18,7 @@ form.addEventListener("submit", async (e) => {    //Waiting for the submit event
             try{
                 //requesting via http to the signup endpoint in backend
                 const response = await fetch("http://localhost:3000/api/signup", {
-                    method: "POST", 
+                    method: "POST",
                     headers:{
                         "Content-Type": "application/json" // letting server know tht it will recieve a json file
                     },
@@ -30,11 +30,11 @@ form.addEventListener("submit", async (e) => {    //Waiting for the submit event
                 });
                 //gets the JSON from the backend
                 const data = await response.json();
-                console.log("Backend reponse: ", data);
+                console.log("Backend response: ", data);
                 if(data.success){//checks if the user sucessfully signed up
                     alert("Signup successful! You will be redirected to the log in");
                     window.location.href = "login.html"; //is successful signup, then redirect to login page
-                    
+
                 }
                 else{
                     //if signup failure, give error
