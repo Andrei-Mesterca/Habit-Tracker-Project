@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+    --accent-color: #2B8C64;
+    --base-color: #ffffff;
+    --text-color: #071c07;
+    --input-color: #edf4ee;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12pt;
+    color: var(--text-color);
+}
+
+body {
+    min-height: 100vh;
+}
+
+/* ── Login / Signup pages only ── */
+body.auth-page {
+    background-image: url("pexels-kunstbube-6818620 (1).jpg");
+    background-size: cover;
+    background-position: left;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wrapper {
+    margin: 0 auto;
+    box-sizing: border-box;
+    background-color: var(--base-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    width: max(40%, 600px);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+form {
+    width: min(400px, 100%);
+    margin-top: 20px;
+    margin-bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+form > div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+form label {
+    flex-shrink: 0;
+    height: 50px;
+    width: 50px;
+    background-color: var(--accent-color);
+    fill: var(--base-color);
+    color: var(--base-color);
+    border-radius: 10px 0 0 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+form input {
+    box-sizing: border-box;
+    flex-grow: 1;
+    min-width: 0;
+    height: 50px;
+    padding: 1em;
+    font: inherit;
+    border-radius: 0 10px 10px 0;
+    border: 2px solid var(--input-color);
+    border-left: none;
+    background-color: var(--input-color);
+    transition: 150ms ease;
+}
+
+form input:hover { border-color: var(--accent-color); }
+form input:focus {
+    outline: none;
+    border-color: var(--text-color);
+    background-color: var(--input-color);
+    color: var(--text-color);
+}
+
+form div:focus-within > label { background-color: var(--text-color); }
+form input::placeholder { color: var(--text-color); }
+
+form button {
+    margin-top: 10px;
+    border: none;
+    border-radius: 1000px;
+    padding: .85em 4em;
+    background-color: var(--accent-color);
+    color: var(--base-color);
+    font: inherit;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 150ms ease;
+}
+
+form button:hover { background-color: var(--text-color); }
+
+a { text-decoration: none; color: var(--accent-color); }
+a:hover { text-decoration: underline; }
+
+@media(max-width: 1100px) {
+    .wrapper { width: min(600px, 100%); border-radius: 0; }
+}
+
+form div.incorrect label { background-color: #aa010d; }
+form div.incorrect input { border-color: #aa010d; }
+#error_message { color: #aa010d; }
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--accent-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0;
+    text-transform: uppercase;
+    margin-top: 0 !important;
+    border-radius: 0 !important;
+}
