@@ -130,7 +130,7 @@ function getStreak(habit) {
       <div class="header">
         <div>
           <h1 class="title">
-            Good day, {{ currentUser?.displayName || 'there' }} 👋
+            Good day, {{ currentUser?.displayName || 'there' }} 
           </h1>
           <p class="date">{{ formattedDate }}</p>
         </div>
@@ -141,7 +141,7 @@ function getStreak(habit) {
       </div>
 
       <div v-if="pageError" class="error-banner">
-        <span>⚠️ {{ pageError }}</span>
+        <span> {{ pageError }}</span>
         <button @click="pageError = ''" class="icon-close">✕</button>
       </div>
 
@@ -162,7 +162,7 @@ function getStreak(habit) {
       <p v-if="loading" class="loading-text">Loading your habits…</p>
 
       <div v-else-if="!habits.length && !pageError" class="empty-state">
-        <div class="empty-icon">🌱</div>
+        <div class="empty-icon"></div>
         <h2 class="empty-title">No habits yet</h2>
         <p class="empty-text">Start building better habits by adding your first one</p>
         <button @click="openAdd" class="primary-btn">
@@ -218,7 +218,7 @@ function getStreak(habit) {
               </span>
 
               <span v-if="getStreak(habit) > 0" class="streak">
-                🔥 {{ getStreak(habit) }}-day streak
+                 {{ getStreak(habit) }}-day streak
               </span>
             </div>
           </div>

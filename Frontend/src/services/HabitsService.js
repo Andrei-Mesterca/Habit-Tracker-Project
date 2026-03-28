@@ -23,9 +23,8 @@ export async function upsertHabit(uid, habit) {
   const allowedFrequencies = new Set(["daily", "weekly", "weekends", "weekdays"]);
   const frequency = allowedFrequencies.has(habit.frequency) ? habit.frequency : "daily";
 
-  // NOTE: name-based id is fragile; ok short-term but can cause overwrites on rename/duplicates
   const habitId = habitIdFromName(habit.name);
-  const habitRef = doc(db, "users", uid, "habit", habitId);
+  const habitRef = doc(db, "users", uid, "habits", habitId);
 
   const snap = await getDoc(habitRef);
   const existingData = snap.exists() ? snap.data() : {};
@@ -40,10 +39,7 @@ export async function upsertHabit(uid, habit) {
     description: habit.description ?? "",
     frequency,
     daysOfWeek,
-
-    // keep server-managed fields stable
     completedDays: existingData.completedDays ?? [],
-
     updatedAt: serverTimestamp(),
     ...(snap.exists() ? {} : { createdAt: serverTimestamp() }),
   };
@@ -56,7 +52,7 @@ export async function toggleHabitCompletion(uid, habitId){
   if (!uid) throw new Error("User id (uid) is required");
   if(!habitId) throw new Error("Habit id is required");
 
-  const habitRef = doc(db, "users", uid, "habit", habitId);
+  const habitRef = doc(db, "users", uid, "habits", habitId);
   const snap = await getDoc(habitRef);
 
   if (!snap.exists()){
@@ -64,11 +60,11 @@ export async function toggleHabitCompletion(uid, habitId){
   }
 
   const data = snap.data();
+  const completedDays = data.completedDays ?? [];
 
   const today = new Date();
   const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2,"0")}`;
 
-  const completedDays = data.completedDays ?? [];
   const isCompletedToday = completedDays.includes(dateString);
 
   await updateDoc(habitRef, {
@@ -88,9 +84,9 @@ export async function isHabitComplete(uid, habitId){
     const m = d.getMonth()+1;
     const day = d.getDate();
     const date = y+"-"+String(m).padStart(2,'0')+"-"+String(day).padStart(2,'0');
-    //const uid = resolveUid(uidOrRef);
+
     if (!uid) throw new Error("No uid available yet");
-    const docRef = doc(db, "users", uid, "habit", habitId);
+    const docRef = doc(db, "users", uid, "habits", habitId);
 
     const snap = await getDoc(docRef);
 
@@ -98,10 +94,13 @@ export async function isHabitComplete(uid, habitId){
         throw new Error("snap doesn't exist");
     }
 
+    const completedDays = snap.data().completedDays ?? [];
+
     const daily = snap.data().frequency === "daily";
     const weekly = snap.data().frequency === "weekly"; 
     const weekdays = snap.data().frequency === "weekdays";
     const weekends = snap.data().frequency === "weekends";
+
     if (daily){
         return completedDays.includes(date);
     }
@@ -134,18 +133,19 @@ export async function isHabitComplete(uid, habitId){
       if(dayWeek !== 0 && dayWeek !== 6) return false;
       return completedDays.includes(date);
     }
-  return false;
 
+  return false;
 }
 
 export async function getHabitByName(name, uid){
-    const ref = doc(db, "users", uid, "habit", habitIdFromName(name));
+    const ref = doc(db, "users", uid, "habits", habitIdFromName(name));
     const snap = await getDoc(ref);
     return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
+
 export async function getHabits(uid) {
   if (!uid) throw new Error("User id (uid) is required");
-    const snap = await getDocs(collection(db, "users", uid, "habit"));
+    const snap = await getDocs(collection(db, "users", uid, "habits"));
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
@@ -153,7 +153,6 @@ export async function deleteHabit(uid, habitId){
   if(!uid) throw new Error("User id (uid) is required ");
   if(!habitId) throw new Error("Habit id is required");
 
-  const habitRef = doc(db, "users", uid, "habit", habitId);
+  const habitRef = doc(db, "users", uid, "habits", habitId);
   await deleteDoc(habitRef);
 }
-

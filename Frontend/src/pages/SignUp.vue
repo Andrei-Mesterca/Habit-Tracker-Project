@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
 import { onMounted, onUnmounted } from 'vue'
+import { auth } from '@/firebase/firebase.js'
+import { signInWithCustomToken } from 'firebase/auth'
 
 const router = useRouter()
-const { login } = useAuth()
 
 const username = ref('')
 const email = ref('')
@@ -32,7 +32,7 @@ async function handleSignUp() {
 
   loading.value = true
   try {
-    // Backend creates user in Firebase Auth + saves profile to Firestore
+    // 1. Backend creates the user in Firebase Auth + saves profile to Firestore
     const res = await fetch('http://localhost:3000/api/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -42,19 +42,32 @@ async function handleSignUp() {
         password: password.value
       })
     })
-    const data = await res.json()
-    if (!data.success) { errorMessage.value = data.error; return }
 
-    // Sign in client-side so Firebase Auth session is established
-    await login(email.value.trim(), password.value)
+    // Safeguard: ensure we actually got JSON back before calling .json()
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+      throw new Error(`Unexpected server response (status ${res.status})`)
+    }
+
+    const data = await res.json()
+    if (!data.success) {
+      errorMessage.value = data.error
+      return
+    }
+
+    // 2. Sign into the Firebase Client SDK using the custom token the server
+    //    already generated — no second round-trip to /api/login needed.
+    await signInWithCustomToken(auth, data.customToken)
+
     router.push('/')
   } catch (e) {
-    errorMessage.value = 'An error occurred. Please try again.'
+    errorMessage.value = e.message || 'An error occurred. Please try again.'
     console.error(e)
   } finally {
     loading.value = false
   }
 }
+
 onMounted(() => {
   document.body.classList.add('auth-page')
 })

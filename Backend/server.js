@@ -47,6 +47,51 @@ function habitIdFromName(name) {
   return name.trim().toLowerCase().replace(/\s+/g, '-');
 }
 
+// ─── LOGIN ───────────────────────────────────────────────────────────────────
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: "Email and password are required" });
+    }
+
+    // 1. Verify credentials using Firebase Identity Toolkit REST API
+    // Make sure FIREBASE_API_KEY is set in your .env file.
+    // Get it from: Firebase Console → Project Settings → General → Web API Key
+    const apiKey = process.env.FIREBASE_API_KEY;
+    if (!apiKey) {
+      console.error("FIREBASE_API_KEY is not set in .env");
+      return res.status(500).json({ success: false, error: "Server misconfiguration: missing API key" });
+    }
+
+    const verifyResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, returnSecureToken: true })
+      }
+    );
+
+    const verifyData = await verifyResponse.json();
+
+    if (!verifyResponse.ok) {
+      throw new Error(verifyData.error?.message || "Invalid credentials");
+    }
+
+    // 2. Generate a Custom Token using the Admin SDK
+    const uid = verifyData.localId;
+    const customToken = await admin.auth().createCustomToken(uid);
+
+    res.json({ success: true, customToken });
+
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(401).json({ success: false, error: error.message });
+  }
+});
+
 // ─── SIGNUP ──────────────────────────────────────────────────────────────────
 app.post("/api/signup", async (req, res) => {
   try {
@@ -59,134 +104,32 @@ app.post("/api/signup", async (req, res) => {
       return res.status(400).json({ success: false, error: "Password must be at least 8 characters" });
     }
 
+    // 1. Create the user in Firebase Auth
     const userRecord = await auth.createUser({
       email,
       password,
       displayName: username
     });
 
+    // 2. Save profile to Firestore
     await db.collection('users').doc(userRecord.uid).set({
       username,
       email,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    res.json({ success: true, uid: userRecord.uid });
+    // 3. Generate a custom token so the client can sign in immediately
+    //    without needing a second round-trip to /api/login
+    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+
+    res.json({ success: true, uid: userRecord.uid, customToken });
+
   } catch (error) {
     console.error("Signup error:", error);
     res.status(400).json({ success: false, error: error.message });
   }
 });
 
-// ─── HABITS ──────────────────────────────────────────────────────────────────
-
-// GET /api/habits — list all habits for the authenticated user
-app.get("/api/habits", verifyToken, async (req, res) => {
-  try {
-    const snap = await db
-      .collection('users').doc(req.uid)
-      .collection('habits')
-      .orderBy('createdAt', 'asc')
-      .get();
-    const habits = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    res.json({ success: true, habits });
-  } catch (e) {
-    console.error("GET habits error:", e);
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
-// POST /api/habits — create a new habit
-app.post("/api/habits", verifyToken, async (req, res) => {
-  try {
-    const { name, description, frequency } = req.body;
-    if (!name?.trim()) return res.status(400).json({ success: false, error: "Habit name is required" });
-
-    const habitId = habitIdFromName(name);
-    const ref = db.collection('users').doc(req.uid).collection('habits').doc(habitId);
-
-    // Check for duplicate
-    const existing = await ref.get();
-    if (existing.exists) {
-      return res.status(409).json({ success: false, error: "A habit with this name already exists" });
-    }
-
-    await ref.set({
-      name: name.trim(),
-      description: description ?? "",
-      frequency: frequency ?? "daily",
-      completedDates: [],
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    res.json({ success: true, habitId });
-  } catch (e) {
-    console.error("POST habit error:", e);
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
-// PUT /api/habits/:id — update name, description, or frequency
-app.put("/api/habits/:id", verifyToken, async (req, res) => {
-  try {
-    const { name, description, frequency } = req.body;
-    if (!name?.trim()) return res.status(400).json({ success: false, error: "Habit name is required" });
-
-    const ref = db.collection('users').doc(req.uid).collection('habits').doc(req.params.id);
-    const existing = await ref.get();
-    if (!existing.exists) return res.status(404).json({ success: false, error: "Habit not found" });
-
-    await ref.update({
-      name: name.trim(),
-      description: description ?? "",
-      frequency: frequency ?? "daily",
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    res.json({ success: true });
-  } catch (e) {
-    console.error("PUT habit error:", e);
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
-// DELETE /api/habits/:id — remove a habit
-app.delete("/api/habits/:id", verifyToken, async (req, res) => {
-  try {
-    const ref = db.collection('users').doc(req.uid).collection('habits').doc(req.params.id);
-    const existing = await ref.get();
-    if (!existing.exists) return res.status(404).json({ success: false, error: "Habit not found" });
-
-    await ref.delete();
-    res.json({ success: true });
-  } catch (e) {
-    console.error("DELETE habit error:", e);
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
-// POST /api/habits/:id/complete — toggle today's completion
-app.post("/api/habits/:id/complete", verifyToken, async (req, res) => {
-  try {
-    const { date, completed } = req.body;
-    if (!date) return res.status(400).json({ success: false, error: "Date is required" });
-
-    const ref = db.collection('users').doc(req.uid).collection('habits').doc(req.params.id);
-    const existing = await ref.get();
-    if (!existing.exists) return res.status(404).json({ success: false, error: "Habit not found" });
-
-    const update = completed
-      ? { completedDates: admin.firestore.FieldValue.arrayUnion(date) }
-      : { completedDates: admin.firestore.FieldValue.arrayRemove(date) };
-
-    await ref.update(update);
-    res.json({ success: true });
-  } catch (e) {
-    console.error("Complete habit error:", e);
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
 
 // ─── SPA fallback ─────────────────────────────────────────────────────────────
 app.get(/(.*)/, (req, res) => {

@@ -1,5 +1,13 @@
 {
   "dependencies": {
-    "bcrypt": "^6.0.0"
+    "bcrypt": "^6.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "mocha": "^11.3.0",
+    "chai": "^6.2.2"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec"
   }
 }
