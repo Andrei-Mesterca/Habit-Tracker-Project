@@ -16,16 +16,19 @@ A web-based habit tracking application built with Node.js, Express, and Firebase
 ## Tech Stack
 
 ### Frontend:
+
 - HTML5
 - CSS3
 - Vanilla JavaScript
 
 ### Backend:
+
 - Node.js
 - Express.js
 - Firebase Admin SDK
 
 ### Database:
+
 - Firebase Firestore
 - Firebase Authentication
 
@@ -36,6 +39,7 @@ Follow these steps to get the project running on your local machine.
 ### Prerequisites
 
 You need the following installed on your computer:
+
 - Node.js (v16 or higher)
 - npm (comes with Node.js)
 - A Firebase account
@@ -59,6 +63,7 @@ npm install
 ```
 
 This will install:
+
 - `express` - Web server framework
 - `cors` - Cross-origin resource sharing
 - `firebase-admin` - Firebase Admin SDK
@@ -118,6 +123,7 @@ touch .env
 ```
 
 Or create it manually:
+
 - Right-click in the Backend folder → New File → Name it `.env`
 
 ##### Step 4.2: Open the downloaded JSON file
@@ -155,6 +161,7 @@ FIREBASE_CLIENT_EMAIL=firebase-adminsdk-abc@habitual-abc123.iam.gserviceaccount.
 ```
 
 **⚠️ Important Notes:**
+
 - Replace the example values with YOUR actual values from the JSON file
 - Keep the **double quotes** around `FIREBASE_PRIVATE_KEY`
 - Keep the `\n` characters - they're supposed to be there!
@@ -223,6 +230,7 @@ If `.env` is NOT there, add it immediately!
 ### Access the Application
 
 Open your browser and go to:
+
 - **Signup:** http://localhost:3000/registry.html
 - **Login:** http://localhost:3000/login.html
 - **Dashboard:** http://localhost:3000/dashboard.html (after login)
@@ -251,17 +259,18 @@ Habitable/
 
 The `.env` file contains sensitive credentials. **Never commit this file to Git!**
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `FIREBASE_PROJECT_ID` | Your Firebase project ID | `habitual-abc123` |
-| `FIREBASE_PRIVATE_KEY` | Service account private key | `"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"` |
-| `FIREBASE_CLIENT_EMAIL` | Service account email | `firebase-adminsdk-xyz@project.iam.gserviceaccount.com` |
+| Variable                | Description                 | Example                                                           |
+| ----------------------- | --------------------------- | ----------------------------------------------------------------- |
+| `FIREBASE_PROJECT_ID`   | Your Firebase project ID    | `habitual-abc123`                                                 |
+| `FIREBASE_PRIVATE_KEY`  | Service account private key | `"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"` |
+| `FIREBASE_CLIENT_EMAIL` | Service account email       | `firebase-adminsdk-xyz@project.iam.gserviceaccount.com`           |
 
 ## Common Issues & Troubleshooting
 
 ### Issue: "Firebase initialization error"
 
 **Solution:**
+
 - Check your `.env` file exists in the Backend folder
 - Verify all 3 environment variables are set correctly
 - Make sure there are no typos or extra spaces
@@ -269,6 +278,7 @@ The `.env` file contains sensitive credentials. **Never commit this file to Git!
 ### Issue: "auth/configuration-not-found"
 
 **Solution:**
+
 - Enable Authentication in Firebase Console
 - Make sure Email/Password is enabled
 
@@ -284,6 +294,7 @@ npm install
 ### Issue: Login shows "Invalid email or password" for correct credentials
 
 **Explanation:**
+
 - Firebase Admin SDK cannot verify passwords directly
 - The current implementation only checks if the email exists
 - Full password verification requires Firebase Client SDK (coming soon)
@@ -305,16 +316,6 @@ npm install
 4. **Rotate your service account keys periodically**
    - Generate new keys every few months
    - Revoke old keys in Firebase Console
-
-## Team Roles
-
-| Role | Responsibilities |
-|------|-----------------|
-| Backend Developer | API endpoints, database, Firebase setup |
-| Frontend Developer | UI implementation, client-side logic |
-| UI/UX Designer | Design, mockups, user experience |
-| Feature Developer | Core habit tracking features |
-| Project Manager/QA | Testing, documentation, coordination |
 
 ## Contributing
 

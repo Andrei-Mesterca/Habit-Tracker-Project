@@ -1,5 +1,6 @@
 # Node
 node_modules/
+package-lock.json
 
 # VS Code
 .vscode/
@@ -9,5 +10,19 @@ desktop.ini
 Thumbs.db
 .DS_Store
 
+# Build artifacts
+dist/
+build/
+
 # Env
 .env
+.env.local
+.env.*.local
+
+# Firebase service accounts
+serviceAccountKey.json
+firebase-adminsdk*.json
+
+# Logs
+*.log
+npm-debug.log*
