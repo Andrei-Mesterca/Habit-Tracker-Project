@@ -17,7 +17,8 @@ form.addEventListener("submit", async (e) => {    //Waiting for the submit event
         if(errors.length == 0){ //if therea are no errors, send to backend
             try{
                 //requesting via http to the signup endpoint in backend
-                const response = await fetch("http://localhost:3000/api/signup", {
+                const apiBase = import.meta.env.VITE_API_BASE_URL;
+                const response = await fetch(`${apiBase}/api/signup`, {
                     method: "POST", 
                     headers:{
                         "Content-Type": "application/json" // letting server know tht it will recieve a json file
@@ -109,7 +110,8 @@ allInputs.forEach(input => {
     })
 })
 
-fetch("http://localhost:3000/health")
+const apiBase = import.meta.env.VITE_API_BASE_URL;
+fetch(`${apiBase}/health`)
   .then(res => res.json())
   .then(data => {
     console.log("Backend response:", data);

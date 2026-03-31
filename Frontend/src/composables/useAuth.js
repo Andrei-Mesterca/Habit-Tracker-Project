@@ -24,7 +24,8 @@ export function useAuth() {
 
   async function login(email, password) {
     // 1. Send credentials to your own backend
-    const response = await fetch("http://localhost:3000/api/login", {
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    const response = await fetch(`${apiBase}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })

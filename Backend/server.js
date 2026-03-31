@@ -132,10 +132,16 @@ app.post("/api/signup", async (req, res) => {
 
 
 // ─── SPA fallback ─────────────────────────────────────────────────────────────
-app.get(/(.*)/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../Frontend/dist/index.html'));
-});
+// Only serve static files and SPA fallback in local development
+if (process.env.NODE_ENV !== 'production') {
+  app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../Frontend/dist/index.html'));
+  });
 
-app.listen(3000, () => {
-  console.log("Backend running on http://localhost:3000");
-});
+  app.listen(3000, () => {
+    console.log("Backend running on http://localhost:3000");
+  });
+}
+
+// Export the app for Cloud Functions
+module.exports = app;
