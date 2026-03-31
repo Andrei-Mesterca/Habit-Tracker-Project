@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import Nav from "@/components/Nav.vue";
-import { useHabits } from "@/composables/UseHabits";
+import { useHabits } from "@/composables/useHabits";
 
 const { handleGetHabits } = useHabits();
 
@@ -59,7 +59,7 @@ onMounted(async () => {
   }
 });
 
-// ── Navigation ────────────────────────────────────────────────────────────────
+//Navigation
 function prevMonth() {
   if (viewMonth.value === 0) {
     viewMonth.value = 11;
@@ -73,7 +73,7 @@ function nextMonth() {
   } else viewMonth.value++;
 }
 
-// ── Calendar grid ─────────────────────────────────────────────────────────────
+// Monthly
 const monthName = computed(() =>
   new Date(viewYear.value, viewMonth.value).toLocaleDateString("en-IE", {
     month: "long",
@@ -82,13 +82,8 @@ const monthName = computed(() =>
 );
 
 const calendarDays = computed(() => {
-  const firstDay = new Date(viewYear.value, viewMonth.value, 1).getDay(); // 0=Sun
-  const daysInMonth = new Date(
-    viewYear.value,
-    viewMonth.value + 1,
-    0,
-  ).getDate();
-
+  const firstDay = new Date(viewYear.value, viewMonth.value, 1).getDay(); // get day for first of month 0=Sun
+  const daysInMonth = new Date(viewYear.value,viewMonth.value + 1, 0).getDate();//go to next month then back 1 day, last day in month to get total days
   const days = [];
 
   // Empty cells before the 1st
@@ -98,7 +93,7 @@ const calendarDays = computed(() => {
 
   // Actual days
   for (let d = 1; d <= daysInMonth; d++) {
-    const mm = String(viewMonth.value + 1).padStart(2, "0");
+    const mm = String(viewMonth.value + 1).padStart(2, "0");//1 goes to 01, 10 would stay same
     const dd = String(d).padStart(2, "0");
     days.push(`${viewYear.value}-${mm}-${dd}`);
   }
@@ -106,32 +101,24 @@ const calendarDays = computed(() => {
   return days;
 });
 
-// ── Per-day data ──────────────────────────────────────────────────────────────
+//Per-day data
 
-// Returns array of { name, done } for a given date string 
-/*function habitsForDay(dateStr) {
-  return habits.value.map((h) => ({
-    id: h.id,
-    name: h.name,
-    done: h.completedDates?.includes(dateStr) ?? false,
-  }));
-}*/
-  const habitsForDay = (selectedDay) => {
-    let temp=[]
-    let habitsMapped=habits.value.map((h) => ({
-    id: h.id,
-    name: h.name,
-    des: h.description,
-    freq: h.frequency,
-    done: h.completedDays?.includes(selectedDay) ?? false,}));   //changed from completedDates to completedDays
-    const date = new Date(selectedDay) 
-    const dayCheck = date.getDay();
-    for(const h of habitsMapped){
-      if(h.freq=="daily")
+const habitsForDay = (selectedDay) => {
+  let temp=[]
+  let habitsMapped=habits.value.map((h) => ({
+  id: h.id,
+  name: h.name,
+  des: h.description,
+  freq: h.frequency,
+  done: h.completedDates?.includes(selectedDay) ?? false,}));
+  const date = new Date(selectedDay) //make date object so i can easily access day
+  const dayCheck = date.getDay();
+  for(const h of habitsMapped){
+    if(h.freq=="daily")
       {
         temp.push(h)
       }
-      else if (h.freq=="weekly" && dayCheck===1)
+      else if (h.freq=="weekly" && dayCheck===0)
       {
         temp.push(h)
       }
@@ -145,7 +132,7 @@ const calendarDays = computed(() => {
       }
     }
   return temp
-  }
+}
 
 // Dot colour per habit — cycle through a palette
 const palette = [
@@ -158,77 +145,46 @@ const palette = [
   "#F39C12",
 ];
 function habitColour(index) {
-  return palette[index % palette.length];
+  return palette[index % palette.length];//using modulo so when it gets to end it just loops
 }
 
-// Background tint for a day cell based on completion ratio
-function dayBg(dateStr) {
-  if (!dateStr) return "transparent";
-  if (dateStr > todayStr) return "#fff";
-  const h = habitsForDay(dateStr);
-  if (!h.length) return "#fff";
-  const done = h.filter((x) => x.done).length;
-  const ratio = done / h.length;
-  if (ratio === 1) return "#d4f0e0";
-  if (ratio > 0) return "#f0faf4";
-  return "#fff";
-}
 
 function isToday(dateStr) {
-  return dateStr === todayStr;
+  return (dateStr === todayStr);
 }
 function isFuture(dateStr) {
-  return dateStr > todayStr;
+  return (dateStr > todayStr);
 }
 
-// ── Day click ─────────────────────────────────────────────────────────────────
+//Day click
 function clickDay(dateStr) {
-  if (!dateStr || isFuture(dateStr)) return;
-  selectedDay.value = selectedDay.value === dateStr ? null : dateStr;
+  if (!dateStr || isFuture(dateStr)) return;//if blank block at start of month or in the future nothing happens on click
+  if(selectedDay.value=== dateStr) {selectedDay.value= null;}
+  else {selectedDay.value= dateStr;}
+  //either select or deselect
 }
 
-const selectedDayHabits = computed(() => {
-  if (!selectedDay.value) return [];
-  return habitsForDay(selectedDay.value);
-});
 
-const selectedDayFormatted = computed(() => {
-  if (!selectedDay.value) return "";
-  return new Date(selectedDay.value + "T12:00:00").toLocaleDateString("en-IE", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-});
-
-const selectedDayCount = computed(() => {
-  const done = selectedDayHabits.value.filter((h) => h.done).length;
-  return `${done} / ${selectedDayHabits.value.length} completed`;
-});
 </script>
 
 <template>
-  <div
-    style="
-      min-height: 100vh;
-      background: #f4f9f6;
-    "
-  >
+  <div style="min-height: 100vh; background: #f4f9f6;">
+
     <Nav />
     <button @click="enlargedDay=null;viewMode = viewMode === 'week' ? 'month' : 'week'" class="btn btn-success">
   {{ viewMode === 'week' ? 'Switch to Month' : 'Switch to Week' }}
     </button>
     <div v-if="viewMode==='week'">
     
-      <div v-if="enlargedDay!=null" style="text-align: center; margin-bottom: 12px;"><button @click="enlargedDay=null" class="navButton"><</button></div>
-      <div  class="week row g-2 d-flex justify-content-center d-flex align-items-stretch">
+      <div v-if="enlargedDay!=null" style="text-align: center;"><button @click="enlargedDay=null" class="navButton"><</button></div>
+      <div  class="week row g-2 d-flex justify-content-center align-items-stretch">
         <div v-for="d in displayedDays" @click="enlargedDay=d" :key="d.date" class="col text-center p-4 regDay clickable" :class="{ today: d.day == day, enlarged: enlargedDay!=null}">
           <div>{{ dayNames[d.day] }}</div>
           <div>{{ d.date }}</div>
         <div class="mt-2 border-top pt-2" style="min-height: 50px">
-          <div v-for="habit in habitsForDay(d.fullDate)" :key="habit.id" class="calendar-event">
-          {{ habit.name }} {{ habit.done ? "✓ Done" : "✗ Missed" }}
+          <div v-for="habit in habitsForDay(d.fullDate)"  class="calendar-event" >
+          {{ habit.name }} #
+          <span >{{ habit.done ? "Done" : "Missed" }}</span>
           <div v-if="enlargedDay" style="font-size:0.7rem">
               {{habit.des}}
               {{habit.freq }}
@@ -241,41 +197,33 @@ const selectedDayCount = computed(() => {
     
     <div v-else>
     <div style="max-width: 900px; margin: 0 auto; padding: 32px 24px">
-      <!-- ── Month header ── -->
-      <div 
-          style="
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 24px;
-          font-size: 1.4rem; font-weight: 800; color: #071c07; margin: 0 ">
+      <!--Month header-->
+      <div class="header" style="font-size: 1.4rem; font-weight: 800;">
 
-        <button @click="prevMonth" class="navButton" >‹</button>
-        <h2 style="">
+        <button @click="prevMonth" class="navButton" ><</button>
+        <h2>
           {{ monthName }}
         </h2>
-        <button @click="nextMonth" class="navButton">›</button>
+        <button @click="nextMonth" class="navButton">></button>
 
       </div>
 
-      <!-- ── Day of week labels ── -->
+      <!--Day of week labels-->
       <div class="weekLabels">
-        <div v-for="d in dayNames" :key="d">
+        <div v-for="d in dayNames">
           {{ d }}
         </div>
       </div>
 
-      <!-- ── Calendar grid ── -->
+      <!--Calendar grid-->
       <div
         style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px"
       >
         <div
           v-for="(dateStr, i) in calendarDays"
-          :key="i"
           @click="clickDay(dateStr)"
           class="regDay"
           :class="{select: dateStr===selectedDay, today: isToday(dateStr), clickable: dateStr && !isFuture(dateStr), future: isFuture(dateStr) }"
-          :style="{background: dateStr === selectedDay ? '#2B8C64' : dayBg(dateStr),}"
         >
           <!-- Day number -->
           <div
@@ -283,175 +231,66 @@ const selectedDayCount = computed(() => {
             :class="{select: dateStr===selectedDay, today: isToday(dateStr)}"
             :style="{border:0}"
           >
-            {{ parseInt(dateStr.split("-")[2]) }}
+            {{(dateStr.split("-")[2]) }}
           </div>
 
           <!-- Habit dots -->
           <div
-            v-if="dateStr && !isFuture(dateStr)"
+            v-if="dateStr"
             style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px"
           >
             <div
               v-for="(habit, idx) in habitsForDay(dateStr)"
-              :key="habit.id"
-              :style="{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: habit.done ? habitColour(idx) : '#d4ead9',
-                flexShrink: '0',
-              }"
+              class="habitDot"
+              :style="{background: habit.done ? habitColour(idx) : '#d4ead9'}"
             ></div>
           </div>
         </div>
       </div>
       </div>
       <!-- ── Legend ── -->
-      <div
-        v-if="habits.length"
-        style="
-          margin-top: 20px;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-          align-items: center;
-        "
-      >
-        <span
-          style="
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #5a7a5a;
-            text-transform: uppercase;
-          "
-          >Habits:</span
-        >
-        <div
-          v-for="(habit, idx) in habits"
-          :key="habit.id"
-          style="display: flex; align-items: center; gap: 5px"
-        >
-          <div
-            :style="{
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              background: habitColour(idx),
-            }"
-          ></div>
-          <span style="font-size: 0.78rem; color: #3a5a3a; font-weight: 600">{{
-            habit.name
-          }}</span>
+      <div v-if="habits.length" style="display: flex; gap: 12px;">
+        <span>Habits:</span>
+        <div v-for="(habit, idx) in habits" style="display: flex; align-items: center; gap: 5px">
+          <div class="habitDot" :style="{background: habitColour(idx)}"></div>
+          {{habit.name}}
         </div>
       </div>
 
       <!-- ── Day summary panel ── -->
-      <div
-        v-if="selectedDay"
-        style="
-          margin-top: 24px;
-          background: #fff;
-          border-radius: 14px;
-          border: 1.5px solid #d4ead9;
-          overflow: hidden;
-        "
-      >
+      <div v-if="selectedDay" style="background: #fff; border-radius: 15px; overflow: hidden;">
         <!-- Panel header -->
-        <div
-          style="
-            background: #2b8c64;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          "
-        >
-          <div>
-            <div style="color: #fff; font-weight: 800; font-size: 1rem">
-              {{ selectedDayFormatted }}
-            </div>
-            <div style="color: #a8dfc4; font-size: 0.82rem; margin-top: 2px">
-              {{ selectedDayCount }}
-            </div>
+        <div class="header" style=" background: #2b8c64; padding: 20px;">
+          <div style="color: #fff; font-weight: 800;"> <!--White bold text for the date-->
+              {{ selectedDay }}
           </div>
-          <button
-            @click="selectedDay = null"
-            style="
-              background: rgba(255, 255, 255, 0.2);
-              border: none;
-              border-radius: 6px;
-              color: #fff;
-              font-size: 1rem;
-              cursor: pointer;
-              padding: 4px 10px;
-              font-weight: 700;
-            "
-          >
-            ✕
-          </button>
+          
+          <button @click="selectedDay = null" class="navButton">✕</button><!--exit button-->
         </div>
 
-        <!-- Habit rows -->
-        <div
-          style="
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-          "
-        >
-          <div
-            v-for="(habit, idx) in selectedDayHabits"
-            :key="habit.id"
-            style="display: flex; align-items: center; gap: 12px"
-          >
+        <!-- Habit info in panel-->
+        <div style= "padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+
+          <div v-for="(habit, idx) in habitsForDay(selectedDay)" style="display: flex; align-items: center; gap: 12px">
             <!-- Coloured dot -->
-            <div
-              :style="{
-                width: '12px',
-                height: '12px',
-                borderRadius: '50%',
-                background: habitColour(idx),
-                flexShrink: '0',
-              }"
-            ></div>
+            <div class="habitDot":style="{background: habitColour(idx)}"> </div>
 
             <!-- Name -->
             <span
-              :style="{
-                flex: '1',
-                fontWeight: '600',
-                fontSize: '0.9rem',
-                color: habit.done ? '#071c07' : '#aaa',
-                textDecoration: habit.done ? 'none' : 'none',
-              }"
-              >{{ habit.name }}</span
-            >
+              :style="{flex: '1', color: habit.done ? '#000000' : '#aaa'}"> <!--if done then text white-->
+              {{ habit.name }}
+            </span>
 
             <!-- Status badge -->
             <span
-              :style="{
-                fontSize: '0.75rem',
-                fontWeight: '700',
-                padding: '3px 10px',
-                borderRadius: '100px',
+              :style="{padding: '5px', borderRadius: '100px',
                 background: habit.done ? '#d4f0e0' : '#f5f5f5',
-                color: habit.done ? '#1a6644' : '#aaa',
-              }"
-            >
-              {{ habit.done ? "✓ Done" : "✗ Missed" }}
+                color: habit.done ? '#071c07' : '#aaa',}"><!--If done then green, rounded border-->
+              {{ habit.done ? "Done" : "Missed" }}
             </span>
           </div>
 
-          <p
-            v-if="!selectedDayHabits.length"
-            style="
-              color: #aaa;
-              font-size: 0.88rem;
-              text-align: center;
-              padding: 12px 0;
-            "
-          >
+          <p v-if="!habitsForDay(selectedDay).length">
             No habits were tracked on this day.
           </p>
         </div>
@@ -463,14 +302,12 @@ const selectedDayCount = computed(() => {
 
 <style scoped>
 .navButton{
-  background: none;
   border: 1.5px solid #d4ead9;
   border-radius: 8px;
   padding: 8px 14px;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #2b8c64;
-  font-weight: 700;
 }
 
  .week{
@@ -480,7 +317,7 @@ const selectedDayCount = computed(() => {
  }
 
  .calendar-event {
-    background-color: hsl(155, 88%, 49%);
+    background-color: #0feb8f;
     color: white;
     padding: 6px 8px;
     border-radius: 6px;
@@ -501,7 +338,7 @@ const selectedDayCount = computed(() => {
   gap: 4px;
   transition: background 150ms;
   font-size: 0.82rem;
-  color: #071c07;
+  color: #000000;
   font-weight: 600;
   line-height: 1;
 }
@@ -535,5 +372,17 @@ const selectedDayCount = computed(() => {
 }
 .enlarged{
   max-width: 400px; /* restrict width */
+}
+
+.habitDot{
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>
