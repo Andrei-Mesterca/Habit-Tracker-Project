@@ -308,6 +308,7 @@ function clickDay(dateStr) {
   cursor: pointer;
   font-size: 1rem;
   color: #2b8c64;
+  background-color: #fff;
 }
 
  .week{
