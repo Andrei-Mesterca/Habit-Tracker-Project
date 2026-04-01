@@ -2,34 +2,29 @@ console.log("SERVER FILE STARTED");
 
 require('dotenv').config();
 
+const functions = require('firebase-functions');
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const { admin, db, auth } = require('./firebase');
 
 const app = express();
 
-app.use(cors());
-app.use((req, res, next) => {
-  res.setHeader(
-    "Content-Security-Policy",
-    "script-src 'self' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.firebaseio.com;"
-  );
-  next();
-});
+// Cors
+app.use(cors({ origin: true }));
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, '../Frontend/dist')));
+
 
 // ─── Health check ────────────────────────────────────────────────────────────
-app.get("/health", (req, res) => {
+// Handle both /health and /api/health
+app.get(["/health", "/api/health"], (req, res) => {
   res.json({ status: "backend alive" });
 });
 
 // ─── Auth middleware ──────────────────────────────────────────────────────────
 async function verifyToken(req, res, next) {
   const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
+  if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({ success: false, error: 'Unauthorized' });
   }
   try {
@@ -48,7 +43,8 @@ function habitIdFromName(name) {
 }
 
 // ─── LOGIN ───────────────────────────────────────────────────────────────────
-app.post("/api/login", async (req, res) => {
+// Handle both /login and /api/login
+app.post(["/login", "/api/login"], async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -56,12 +52,9 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ success: false, error: "Email and password are required" });
     }
 
-    // 1. Verify credentials using Firebase Identity Toolkit REST API
-    // Make sure FIREBASE_API_KEY is set in your .env file.
-    // Get it from: Firebase Console → Project Settings → General → Web API Key
-    const apiKey = process.env.FIREBASE_API_KEY;
+    const apiKey = process.env.MY_API_KEY;
     if (!apiKey) {
-      console.error("FIREBASE_API_KEY is not set in .env");
+      console.error("MY_API_KEY is not set in .env");
       return res.status(500).json({ success: false, error: "Server misconfiguration: missing API key" });
     }
 
@@ -80,7 +73,6 @@ app.post("/api/login", async (req, res) => {
       throw new Error(verifyData.error?.message || "Invalid credentials");
     }
 
-    // 2. Generate a Custom Token using the Admin SDK
     const uid = verifyData.localId;
     const customToken = await admin.auth().createCustomToken(uid);
 
@@ -93,7 +85,8 @@ app.post("/api/login", async (req, res) => {
 });
 
 // ─── SIGNUP ──────────────────────────────────────────────────────────────────
-app.post("/api/signup", async (req, res) => {
+// Handle both /signup and /api/signup
+app.post(["/signup", "/api/signup"], async (req, res) => {
   try {
     const { email, password, username } = req.body;
 
@@ -104,22 +97,18 @@ app.post("/api/signup", async (req, res) => {
       return res.status(400).json({ success: false, error: "Password must be at least 8 characters" });
     }
 
-    // 1. Create the user in Firebase Auth
     const userRecord = await auth.createUser({
       email,
       password,
       displayName: username
     });
 
-    // 2. Save profile to Firestore
     await db.collection('users').doc(userRecord.uid).set({
       username,
       email,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // 3. Generate a custom token so the client can sign in immediately
-    //    without needing a second round-trip to /api/login
     const customToken = await admin.auth().createCustomToken(userRecord.uid);
 
     res.json({ success: true, uid: userRecord.uid, customToken });
@@ -130,18 +119,5 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
-
-// ─── SPA fallback ─────────────────────────────────────────────────────────────
-// Only serve static files and SPA fallback in local development
-if (process.env.NODE_ENV !== 'production') {
-  app.get(/(.*)/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../Frontend/dist/index.html'));
-  });
-
-  app.listen(3000, () => {
-    console.log("Backend running on http://localhost:3000");
-  });
-}
-
-// Export the app for Cloud Functions
-module.exports = app;
+// Export the Express app as a Cloud Function
+exports.api = functions.https.onRequest(app);

@@ -110,7 +110,7 @@ const habitsForDay = (selectedDay) => {
   name: h.name,
   des: h.description,
   freq: h.frequency,
-  done: h.completedDates?.includes(selectedDay) ?? false,}));
+  done: h.completedDays?.includes(selectedDay) ?? false,}));
   const date = new Date(selectedDay) //make date object so i can easily access day
   const dayCheck = date.getDay();
   for(const h of habitsMapped){

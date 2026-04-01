@@ -1,28 +1,27 @@
-# Node
+# Dependencies
 node_modules/
-package-lock.json
+frontend-src/node_modules/
+frontend/node_modules/
+functions/node_modules/
+backend/node_modules/
 
-# VS Code
-.vscode/
-
-# OS
-desktop.ini
-Thumbs.db
-.DS_Store
-
-# Build artifacts
-dist/
-build/
-
-# Env
+# Environment files 
 .env
 .env.local
-.env.*.local
+.env.production
+*.env
+functions/.env
+backend/.env
+frontend-src/.env
+frontend/.env
 
-# Firebase service accounts
-serviceAccountKey.json
-firebase-adminsdk*.json
+# Build outputs
+dist/
+public/dist/
+frontend-src/dist/
+frontend/dist/
 
-# Logs
-*.log
-npm-debug.log*
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log

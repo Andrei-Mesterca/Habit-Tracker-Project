@@ -1,13 +1,12 @@
 {
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "node-fetch": "^3.3.2"
-  },
-  "devDependencies": {
-    "mocha": "^11.3.0",
-    "chai": "^6.2.2"
-  },
+  "name": "habitual-app",
+  "version": "1.0.0",
+  "description": "Habitual App with Firebase",
   "scripts": {
-    "test": "mocha --reporter spec"
+    "build-frontend": "cd frontend-src && npm run build",
+    "copy-to-public": "xcopy frontend-src\\dist\\* public\\ /E /I /Y",
+    "build": "npm run build-frontend && npm run copy-to-public",
+    "deploy": "npm run build && firebase deploy",
+    "emulators": "firebase emulators:start"
   }
 }
